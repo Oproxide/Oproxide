@@ -38,7 +38,7 @@ function MyLib.Bruteforce(notify, printResults, ...)
 
             if object:IsA("RemoteEvent") then
                 success, result = pcall(function()
-                    return object:Fire(unpack(args))
+                    return object:FireServer(unpack(args))
                 end)
             elseif object:IsA("RemoteFunction") then
                 success, result = pcall(function()
