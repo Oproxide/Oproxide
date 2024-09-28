@@ -1,5 +1,56 @@
 local MyLib = {}
 
+local function processObject(targetLocation, args)
+    local function checkChildren(children)
+        for _, child in ipairs(children) do
+            if (child:IsA("RemoteEvent") or child:IsA("RemoteFunction") or 
+                child:IsA("BindableEvent") or child:IsA("BindableFunction")) and 
+                isDeveloperAccessible(child) then
+                
+                local success, result
+                if child:IsA("RemoteEvent") then
+                    success, result = pcall(function()
+                        return child:FireServer(unpack(args))
+                    end)
+                elseif child:IsA("RemoteFunction") then
+                    success, result = pcall(function()
+                        return child:InvokeServer(unpack(args))
+                    end)
+                elseif child:IsA("BindableEvent") then
+                    success, result = pcall(function()
+                        return child:Fire(unpack(args))
+                    end)
+                elseif child:IsA("BindableFunction") then
+                    success, result = pcall(function()
+                        return child:Invoke(unpack(args))
+                    end)
+                end
+
+                if success then
+                    if notify then
+                        game:GetService("StarterGui"):SetCore("SendNotification", {
+                            Title = "BF",
+                            Text = "Brute Forced " .. child.Name,
+                            Duration = 5,
+                        })
+                    end
+                    if printResults then
+                        print("Success with " .. child.Name)
+                    end
+                else
+                    if printResults then
+                        print("Failed with " .. child.Name .. ": " .. tostring(result))
+                    end
+                end
+            end
+            checkChildren(child:GetChildren())
+        end
+    end
+    
+    checkChildren(targetLocation:GetChildren())
+end
+
+
 local function processPlayerObjects(players, localPlayer, includeLocalPlayer, callback)
     for _, player in pairs(players) do
         if includeLocalPlayer or player ~= localPlayer then
@@ -63,32 +114,35 @@ function MyLib.Bruteforce(notify, printResults, location, bruteforce_list, argsC
         game.StarterGui,
         game.StarterPack,
         game.StarterPlayer,
-        game.Teams
+        game.Teams,
+        game.SoundService
     }
 
+    -- Function to process objects for brute force
     local function processObject(object)
+        -- Check if the object is one of the valid classes we want to brute force
         if (object:IsA("RemoteEvent") or object:IsA("RemoteFunction") or object:IsA("BindableEvent") or object:IsA("BindableFunction")) and isDeveloperAccessible(object) then
             local success, result
 
-            -- Prepare arguments based on bruteforce_list and argsCount
+            -- Prepare arguments based on the bruteforce_list and argsCount
             local fireArgs = {}
             for i = 1, argsCount do
                 local listIndex = (i - 1) % #bruteforce_list + 1 -- Loop through the bruteforce_list
                 fireArgs[i] = bruteforce_list[listIndex]
             end
             
-            -- Call the function based on object type
+            -- Call the appropriate method based on object type
             if object:IsA("RemoteEvent") then
                 success, result = pcall(function()
                     return object:FireServer(unpack(fireArgs))
                 end)
             elseif object:IsA("RemoteFunction") then
                 success, result = pcall(function()
-                    return object:InvokeServer(unpack(fireArgs)) 
+                    return object:InvokeServer(unpack(fireArgs))
                 end)
             elseif object:IsA("BindableEvent") then
                 success, result = pcall(function()
-                    return object:Fire(unpack(fireArgs)) 
+                    return object:Fire(unpack(fireArgs))
                 end)
             elseif object:IsA("BindableFunction") then
                 success, result = pcall(function()
@@ -96,6 +150,7 @@ function MyLib.Bruteforce(notify, printResults, location, bruteforce_list, argsC
                 end)
             end
 
+            -- Notify and log the result of the brute force attempt
             if success then
                 successCount = successCount + 1
                 if notify then
@@ -116,73 +171,25 @@ function MyLib.Bruteforce(notify, printResults, location, bruteforce_list, argsC
         end
     end
 
-    local function recursiveCheck(children)
-        for _, child in ipairs(children) do
+    -- Recursive function to check all descendants, not just immediate children
+    local function recursiveCheck(parent)
+        for _, child in ipairs(parent:GetChildren()) do
             processObject(child)
-            recursiveCheck(child:GetChildren())
+            -- Recursively check the children of the current child
+            recursiveCheck(child)
         end
     end
 
-    -- If location is provided, use it; otherwise, check valid services
+    -- If a specific location is provided, start from there; otherwise, check all valid services
     if location then
-        recursiveCheck(location:GetChildren())
+        recursiveCheck(location)
     else
         for _, service in ipairs(validServices) do
-            recursiveCheck(service:GetChildren())
+            recursiveCheck(service)
         end
     end
 
     return successCount
-end
-
-local function processObject(targetLocation, args)
-    local function checkChildren(children)
-        for _, child in ipairs(children) do
-            if (child:IsA("RemoteEvent") or child:IsA("RemoteFunction") or 
-                child:IsA("BindableEvent") or child:IsA("BindableFunction")) and 
-                isDeveloperAccessible(child) then
-                
-                local success, result
-                if child:IsA("RemoteEvent") then
-                    success, result = pcall(function()
-                        return child:FireServer(unpack(args))
-                    end)
-                elseif child:IsA("RemoteFunction") then
-                    success, result = pcall(function()
-                        return child:InvokeServer(unpack(args))
-                    end)
-                elseif child:IsA("BindableEvent") then
-                    success, result = pcall(function()
-                        return child:Fire(unpack(args))
-                    end)
-                elseif child:IsA("BindableFunction") then
-                    success, result = pcall(function()
-                        return child:Invoke(unpack(args))
-                    end)
-                end
-
-                if success then
-                    if notify then
-                        game:GetService("StarterGui"):SetCore("SendNotification", {
-                            Title = "BF",
-                            Text = "Brute Forced " .. child.Name,
-                            Duration = 5,
-                        })
-                    end
-                    if printResults then
-                        print("Success with " .. child.Name)
-                    end
-                else
-                    if printResults then
-                        print("Failed with " .. child.Name .. ": " .. tostring(result))
-                    end
-                end
-            end
-            checkChildren(child:GetChildren())
-        end
-    end
-    
-    checkChildren(targetLocation:GetChildren())
 end
 
 -- Function to get game information
