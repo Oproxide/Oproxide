@@ -24,7 +24,7 @@ function MyLib.GetPlayers(option, callback)
     end
 end
 
--- 3. Change all children of `game` to their class names
+-- Change all children of `game` to their class names
 function MyLib.RenameGameChildrenToClassName()
     local gameChildren = game:GetChildren()
     for _, child in ipairs(gameChildren) do
@@ -46,19 +46,19 @@ function MyLib.Bruteforce(notify, printResults, ...)
             -- Attempt to invoke the object based on its type
             if object:IsA("RemoteEvent") then
                 success, result = pcall(function()
-                    return object:Fire(...args)
+                    return object:Fire(unpack(args))  -- Use unpack to spread the args
                 end)
             elseif object:IsA("RemoteFunction") then
                 success, result = pcall(function()
-                    return object:Invoke(...args)
+                    return object:Invoke(unpack(args))  -- Use unpack to spread the args
                 end)
             elseif object:IsA("BindableEvent") then
                 success, result = pcall(function()
-                    return object:Fire(...args)
+                    return object:Fire(unpack(args))  -- Use unpack to spread the args
                 end)
             elseif object:IsA("BindableFunction") then
                 success, result = pcall(function()
-                    return object:Invoke(...args)
+                    return object:Invoke(unpack(args))  -- Use unpack to spread the args
                 end)
             end
 
