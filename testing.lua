@@ -28,4 +28,4 @@ function Exploitttthelper.RenameGameChildrenToClassName()
     end
 end
 
-return MyLib
+return Exploitttthelper
