@@ -51,62 +51,81 @@ local function isDeveloperAccessible(object)
     return false
 end
 
-function MyLib.Bruteforce(notify, printResults, ...)
+function MyLib.Bruteforce(notify, printResults, location, bruteforce_list, ...)
     local args = {...}
     local successCount = 0
+    local targetLocation = location or game:GetChildren() -- Default to all children in the game
 
-    local function processObject(object)
-        if (object:IsA("RemoteEvent") or object:IsA("RemoteFunction") or object:IsA("BindableEvent") or object:IsA("BindableFunction")) and isDeveloperAccessible(object) then
-            local success, result
-
-            if object:IsA("RemoteEvent") then
-                success, result = pcall(function()
-                    return object:FireServer(unpack(args))
-                end)
-            elseif object:IsA("RemoteFunction") then
-                success, result = pcall(function()
-                    return object:InvokeServer(unpack(args)) 
-                end)
-            elseif object:IsA("BindableEvent") then
-                success, result = pcall(function()
-                    return object:Fire(unpack(args)) 
-                end)
-            elseif object:IsA("BindableFunction") then
-                success, result = pcall(function()
-                    return object:Invoke(unpack(args))
-                end)
+    -- If bruteforce_list is provided, use its contents as arguments
+    if bruteforce_list then
+        local argCount = #args
+        local filledArgs = {}
+        for _, str in ipairs(bruteforce_list) do
+            for i = 1, argCount do
+                filledArgs[i] = str
             end
-
+            -- Process with filledArgs
+            local success = processObject(targetLocation, filledArgs)
             if success then
                 successCount = successCount + 1
-                if notify then
-                    game:GetService("StarterGui"):SetCore("SendNotification", {
-                        Title = "BF",
-                        Text = "Brute Forced " .. object.Name,
-                        Duration = 5,
-                    })
-                end
-                if printResults then
-                    print("Success with " .. object.Name)
-                end
-            else
-                if printResults then
-                    print("Failed with " .. object.Name .. ": " .. tostring(result))
-                end
             end
         end
+    else
+        -- Process normally without bruteforce_list
+        processObject(targetLocation, args)
     end
-
-    local function recursiveCheck(children)
-        for _, child in ipairs(children) do
-            processObject(child)
-            recursiveCheck(child:GetChildren())
-        end
-    end
-
-    recursiveCheck(game:GetChildren())
 
     return successCount
+end
+
+local function processObject(targetLocation, args)
+    local function checkChildren(children)
+        for _, child in ipairs(children) do
+            if (child:IsA("RemoteEvent") or child:IsA("RemoteFunction") or 
+                child:IsA("BindableEvent") or child:IsA("BindableFunction")) and 
+                isDeveloperAccessible(child) then
+                
+                local success, result
+                if child:IsA("RemoteEvent") then
+                    success, result = pcall(function()
+                        return child:FireServer(unpack(args))
+                    end)
+                elseif child:IsA("RemoteFunction") then
+                    success, result = pcall(function()
+                        return child:InvokeServer(unpack(args))
+                    end)
+                elseif child:IsA("BindableEvent") then
+                    success, result = pcall(function()
+                        return child:Fire(unpack(args))
+                    end)
+                elseif child:IsA("BindableFunction") then
+                    success, result = pcall(function()
+                        return child:Invoke(unpack(args))
+                    end)
+                end
+
+                if success then
+                    if notify then
+                        game:GetService("StarterGui"):SetCore("SendNotification", {
+                            Title = "BF",
+                            Text = "Brute Forced " .. child.Name,
+                            Duration = 5,
+                        })
+                    end
+                    if printResults then
+                        print("Success with " .. child.Name)
+                    end
+                else
+                    if printResults then
+                        print("Failed with " .. child.Name .. ": " .. tostring(result))
+                    end
+                end
+            end
+            checkChildren(child:GetChildren())
+        end
+    end
+    
+    checkChildren(targetLocation:GetChildren())
 end
 
 -- Function to get game information
