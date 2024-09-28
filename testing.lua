@@ -42,7 +42,7 @@ function MyLib.Bruteforce(notify, printResults, ...)
                 end)
             elseif object:IsA("RemoteFunction") then
                 success, result = pcall(function()
-                    return object:Invoke(unpack(args)) 
+                    return object:InvokeServer(unpack(args)) 
                 end)
             elseif object:IsA("BindableEvent") then
                 success, result = pcall(function()
