@@ -1,45 +1,36 @@
 local MyLib = {}
 
--- Helper function to loop through players and run a callback on each one
-local function processPlayers(players, callback)
+-- Helper function to loop through players and apply a callback to their characters
+local function processPlayerCharacters(players, callback)
     for _, player in pairs(players) do
-        callback(player)
+        if player.Character then
+            callback(player, player.Character)
+        end
     end
 end
 
--- 1. Get all players except the local player and retrieve their avatars and other things inside them
-function MyLib.GetOtherPlayers(localPlayer)
+-- 1. Get all players except the local player and apply a callback to their characters
+function MyLib.GetOtherPlayers(localPlayer, callback)
     local players = game:GetService("Players"):GetPlayers()
-    processPlayers(players, function(player)
-        if player ~= localPlayer then
-            print("Player:", player.Name)
-            if player.Character then
-                print("Avatar:", player.Character.Name)
-                -- You can access other things inside the player here
-            end
+    
+    for _, player in pairs(players) do
+        if player ~= localPlayer and player.Character then
+            callback(player, player.Character)
         end
-    end)
+    end
 end
 
--- 2. Get all players including the local player and retrieve their avatars and other things inside them
-function MyLib.GetAllPlayers()
+-- 2. Get all players including the local player and apply a callback to their characters
+function MyLib.GetAllPlayers(callback)
     local players = game:GetService("Players"):GetPlayers()
-    processPlayers(players, function(player)
-        print("Player:", player.Name)
-        if player.Character then
-            print("Avatar:", player.Character.Name)
-            -- You can access other things inside the player here
-        end
-    end)
+    processPlayerCharacters(players, callback)
 end
 
 -- 3. Change all children of `game` to their class names
 function MyLib.RenameGameChildrenToClassName()
     local gameChildren = game:GetChildren()
     for _, child in ipairs(gameChildren) do
-        -- Get the class name of the child (e.g., "Workspace", "Players")
         local className = child.ClassName
-        -- Change its name to the class name
         child.Name = className
     end
 end
