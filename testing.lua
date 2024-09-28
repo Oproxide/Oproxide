@@ -114,8 +114,7 @@ function MyLib.Bruteforce(notify, printResults, location, bruteforce_list, argsC
         game.StarterGui,
         game.StarterPack,
         game.StarterPlayer,
-        game.Teams,
-        game.SoundService
+        game.Teams
     }
 
     -- Function to process objects for brute force
