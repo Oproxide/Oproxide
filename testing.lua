@@ -46,7 +46,7 @@ function MyLib.Bruteforce(notify, printResults, ...)
             -- Attempt to invoke the object based on its type
             if object:IsA("RemoteEvent") then
                 success, result = pcall(function()
-                    return object:Fire(unpack(args))  -- Use unpack to spread the args
+                    return object:FireServer(unpack(args))  -- Use unpack to spread the args
                 end)
             elseif object:IsA("RemoteFunction") then
                 success, result = pcall(function()
