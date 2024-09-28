@@ -66,7 +66,12 @@ function MyLib.Bruteforce(notify, printResults, ...)
             if success then
                 successCount = successCount + 1
                 if notify then
-                    game:GetService("Players").LocalPlayer:Kick("Success with " .. object.Name)
+                    -- Send a notification instead of kicking the player
+                    game:GetService("StarterGui"):SetCore("SendNotification", {
+                        Title = "Success!",
+                        Text = "Success with " .. object.Name,
+                        Duration = 5,
+                    })
                 end
                 if printResults then
                     print("Success with " .. object.Name)
