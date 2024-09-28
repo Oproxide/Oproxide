@@ -1,5 +1,6 @@
-local Exploitttthelper = {}
+local MyLib = {}
 
+-- Helper function to loop through players and apply a callback to their entire player model
 local function processPlayerObjects(players, localPlayer, includeLocalPlayer, callback)
     for _, player in pairs(players) do
         if includeLocalPlayer or player ~= localPlayer then
@@ -8,9 +9,12 @@ local function processPlayerObjects(players, localPlayer, includeLocalPlayer, ca
     end
 end
 
-function Exploitttthelper.GetPlayers(option, callback)
+-- Combined function to get all players or just other players and apply a callback
+function MyLib.GetPlayers(option, callback)
     local players = game:GetService("Players"):GetPlayers()
-    local localPlayer = game.Players.LocalPlayer 
+    local localPlayer = game.Players.LocalPlayer  -- Get the local player automatically
+    
+    -- Check the option to determine whether to include the local player
     if option == "all" then
         processPlayerObjects(players, localPlayer, true, callback)
     elseif option == "others" then
@@ -20,7 +24,8 @@ function Exploitttthelper.GetPlayers(option, callback)
     end
 end
 
-function Exploitttthelper.RenameGameChildrenToClassName()
+-- 3. Change all children of `game` to their class names
+function MyLib.RenameGameChildrenToClassName()
     local gameChildren = game:GetChildren()
     for _, child in ipairs(gameChildren) do
         local className = child.ClassName
@@ -28,4 +33,4 @@ function Exploitttthelper.RenameGameChildrenToClassName()
     end
 end
 
-return Exploitttthelper
+return MyLib
