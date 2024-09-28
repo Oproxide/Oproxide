@@ -39,8 +39,7 @@ local function isDeveloperAccessible(object)
         game.StarterGui,
         game.StarterPack,
         game.StarterPlayer,
-        game.Teams,
-        game.SoundService
+        game.Teams
     }
     
     for _, service in ipairs(validServices) do
