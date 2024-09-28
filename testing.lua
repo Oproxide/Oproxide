@@ -33,4 +33,64 @@ function MyLib.RenameGameChildrenToClassName()
     end
 end
 
+-- Function to brute force bindable events, remote functions, bindable functions, and remote events
+function MyLib.Bruteforce(notify, printResults, ...)
+    local args = {...}
+    local successCount = 0
+
+    -- Iterate through all children of the game
+    local function processObject(object)
+        if object:IsA("RemoteEvent") or object:IsA("RemoteFunction") or object:IsA("BindableEvent") or object:IsA("BindableFunction") then
+            local success, result
+
+            -- Attempt to invoke the object based on its type
+            if object:IsA("RemoteEvent") then
+                success, result = pcall(function()
+                    return object:Fire(...args)
+                end)
+            elseif object:IsA("RemoteFunction") then
+                success, result = pcall(function()
+                    return object:Invoke(...args)
+                end)
+            elseif object:IsA("BindableEvent") then
+                success, result = pcall(function()
+                    return object:Fire(...args)
+                end)
+            elseif object:IsA("BindableFunction") then
+                success, result = pcall(function()
+                    return object:Invoke(...args)
+                end)
+            end
+
+            -- Notify and print results if requested
+            if success then
+                successCount = successCount + 1
+                if notify then
+                    game:GetService("Players").LocalPlayer:Kick("Success with " .. object.Name)
+                end
+                if printResults then
+                    print("Success with " .. object.Name)
+                end
+            else
+                if printResults then
+                    print("Failed with " .. object.Name .. ": " .. tostring(result))
+                end
+            end
+        end
+    end
+
+    -- Recursive function to process all objects in the game
+    local function recursiveCheck(children)
+        for _, child in ipairs(children) do
+            processObject(child)  -- Check the current object
+            recursiveCheck(child:GetChildren())  -- Check its children
+        end
+    end
+
+    -- Start checking from the game object
+    recursiveCheck(game:GetChildren())
+
+    return successCount
+end
+
 return MyLib
